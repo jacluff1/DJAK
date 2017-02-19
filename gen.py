@@ -102,40 +102,85 @@ class var:
         self.err = err
         self.units = str(units)
         self.name = str(name)
+        self.av = np.average(self.val)
+        self.std = np.std(self.val)
         
         def prec(self):
             p = abs(int(np.log10(abs(self.err)))) + 1
             return p
+
+        def int_prec(x,p):
+            x = str(x)
+            x_keep = x[:-p]
+            x_toss = x[-p:]
+            x_app = []
+            for x in x_toss:
+                x_app.append('0')
+            x_app = ''.join(x_app)
+            x_new = int(x_keep+x_app)
+            return x_new
         
-        if type(self.val) == float or type(self.val) == np.float64:
-            p = prec(self)
-            self.av = self.val
-            self.pval = round(self.val,p)
-            self.perr = round(self.err,p)
-            self.pav = self.pval
-        
-        elif type(self.err) == float:
-            self.val = np.array(self.val)
-            self.av = np.average(self.val)
-            p = prec(self)
-            self.perr = round(self.err,p)
-            self.pval = np.round(self.val,p)
-            self.pav = np.round(self.av,p)
-        
-        elif self.err == 'std':
-            self.val = np.array(self.val)
-            self.err = np.std(self.val)
-            self.av = np.average(self.val)
-            p = prec(self)
-            self.perr = round(self.err,p)
-            self.pval = np.round(self.val,p)
-            self.pav = round(self.av,p)
-        else:
-            print("need additional boolean conditions")
-            print(self.name,self.val,self.err)
-            self.pval = val
-            self.perr = err
-            self.pav = self.pval
+        try:
+            if self.err < 1:
+                p = prec(self)
+                self.p = p
+                self.pval = round(self.val,p)
+                self.perr = round(self.err,p)
+                self.pav = round(self.av,p)
+                self.pstd = round(self.std,p)
+            elif self.err >= 1:
+                self.perr = int(self.err)
+                p = len(str(self.perr))
+                self.p = p
+                if p == 1:
+                    self.pval = int(self.val)
+                    self.pav = int(self.av)
+                    self.pstd = int(self.std)
+                else:
+                    self.pval = int_prec(self.val,p)
+                    self.pav = int_prec(self.av,p)
+                    self.pstd = int_prec(self.av,p)
+
+        except (TypeError,ValueError):
+            try:
+                self.pval = np.zeros(len(self.val))
+                self.perr = np.zeros(len(self.err))
+                self.p = np.zeros(len(self.err))
+                self.av_err = np.average(self.err)
+                if self.av_err < 1:
+                	p_av = int(abs(int(np.log10(abs(self.av_err)))) + 1)
+                	self.p_av = p_av
+                	self.pav = round(self.av,p_av)
+                	self.pav_err = round(self.av_err,p_av)
+                	self.pstd = round(self.std,p_av)
+                elif self.av_err >= 1:
+                	self.pav_err = int(self.av_err)
+                	p_av = len(str(self.pav_err))
+                	self.p_av = p_av
+                	if p_av == 1:
+                		self.pav = int(self.av)
+                		self.pstd = int(self.std)
+                	else:
+                		self.pav = int_prec(self.av,p_av)
+                		self.pstd = int_prec(self.std,p_av)
+                for i in range(len(self.pval)):
+                	if self.err[i] < 1:
+                		p = int(abs(int(np.log10(abs(self.err[i])))) + 1)
+                		self.p[i] = p
+                		self.pval[i] = round(self.val[i],p)
+                		self.perr[i] = round(self.err[i],p)
+                	elif self.err[i] >= 1:
+                		self.perr[i] = int(self.err[i])
+                		p = len(str(self.perr[i]))
+                		self.p[i] = p
+                		if p == 1:
+                			self.pval[i] = int(self.val[i])
+                			self.perr[i] = int(self.err[i])
+                		else:
+                			self.pval[i] = int_prec(self.val[i],p)
+                			self.perr[i] = int_prec(self.err[i],p)
+            except TypeError:
+            	print("try something else")
         
 def printvar(var):
     print(var.name,var.av,var.err,var.units)
