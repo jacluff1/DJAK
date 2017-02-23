@@ -139,5 +139,49 @@ def least_square(fitfunc,par,X_data,Y_data,cycles=5000):
         print("OMFG - Failed!!")
     return qout
 
+# http://stackoverflow.com/questions/14581358/getting-standard-errors-on-fitted-parameters-using-the-optimize-leastsq-method-i
+
+# def fit_leastsq(p0, datax, datay, function):
+
+#     #errfunc = lambda p, x, y: function(x,p) - y
+#     def errfunc(p,x,y):
+#         return y - function(p,x)
+
+#     pfit, pcov, infodict, errmsg, success = \
+#         optimize.leastsq(errfunc, p0, args=(datax, datay), \
+#                           full_output=1, epsfcn=0.000001)
+
+#     if (len(datay) > len(p0)) and pcov is not None:
+#         s_sq = (errfunc(pfit, datax, datay)**2).sum()/(len(datay)-len(p0))
+#         pcov = pcov * s_sq
+#     else:
+#         pcov = np.inf
+
+#     error = [] 
+#     for i in range(len(pfit)):
+#         try:
+#           error.append(np.absolute(pcov[i][i])**0.5)
+#         except:
+#           error.append( 0.00 )
+#     pfit_leastsq = pfit
+#     perr_leastsq = np.array(error) 
+#     return pfit_leastsq, perr_leastsq 
+
+# def fit_curvefit(p0, datax, datay, function, yerr=err_stdev, **kwargs):
+
+#     pfit, pcov = \
+#          optimize.curve_fit(f,datax,datay,p0=p0,\
+#                             sigma=yerr, epsfcn=0.0001, **kwargs)
+#     error = [] 
+#     for i in range(len(pfit)):
+#         try:
+#           error.append(np.absolute(pcov[i][i])**0.5)
+#         except:
+#           error.append( 0.00 )
+#     pfit_curvefit = pfit
+#     perr_curvefit = np.array(error)
+#     return pfit_curvefit, perr_curvefit 
+    
+
 
 
