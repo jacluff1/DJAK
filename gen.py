@@ -28,7 +28,7 @@ def nearest(Array1,value): # finds the index of the nearest element in an array 
 
 def maxima(X,Y,x_approx,dx,ret='i_max'):# finds local maximum of array
     dx = int(dx)
-    i_approx = nearest(X,x_approx) # good 
+    i_approx = nearest(X,x_approx) # good
     i_add = len(X[:i_approx-dx])
     X_n = np.array(X[i_approx-dx:i_approx+dx+1])
     Y_n = np.array(Y[i_approx-dx:i_approx+dx+1])
@@ -61,7 +61,7 @@ def minima(X,Y,x_approx,dx,ret='i_min'): # finds local minimum of an array
         return x_min
     if ret == 'all':
         return (i_min+i_add),x_min,y_min
-    
+
 def extrema(X,Y,x_range,xmin_approx,xmax_approx,ret='sep',sortcol=0): # finds the exact extrema given a list of approximate minima and maxima
     dx = int(x_range)
     i_min,i_max = [],[]
@@ -87,7 +87,7 @@ def extrema(X,Y,x_range,xmin_approx,xmax_approx,ret='sep',sortcol=0): # finds th
         minima.append([x_min[i],y_min[i]])
     for i in range(len(x_max)):
         maxima.append([x_max[i],y_max[i]])
-        
+
     if ret == 'sep':
         return minima,maxima
     else:
@@ -97,17 +97,23 @@ def extrema(X,Y,x_range,xmin_approx,xmax_approx,ret='sep',sortcol=0): # finds th
         return ext
 
 def float_prec(x):
-    x = str(x)
-    x = x[2:]
-    p = 1
-    for i in range(len(x)):
-        if x[i] == '0':
-            p += 1
-        else:
-            break
+    str_x = str(x)
+    find_e = str.find(str_x,'e-')
+    if find_e != -1:
+        p = float(str_x[find_e+2:])
+    else:
+        str_x = str_x[2:]
+        p = 1
+        for i in range(len(str_x)):
+            if str_x[i] == '0':
+                p += 1
+            else:
+                break
     return p
 
 def int_prec(x,p,err=False):
+    if p == 1:
+        err=True
 
     if err == False:
         mult = 10**(p)
@@ -119,22 +125,21 @@ def int_prec(x,p,err=False):
     return x_new
 
 class var:
-    def __init__(self,val,err,units):
+    def __init__(self,val,err):
         self.val = val
         self.err = err
-        self.units = units
 
         try: # try for scalar values in val and err
 
             if self.err < 1:
-                
-                p = float_prec(self.err)
+
+                p = int(float_prec(self.err))
                 self.p = p
                 self.pval = round(self.val,p)
                 self.perr = round(self.err,p)
-                
-            else:
 
+            else:
+            
                 p = len(str(int(self.err)))
                 self.p = p
                 self.pval = int_prec(self.val,p)
@@ -166,15 +171,14 @@ class var:
                         self.p[i] = p
                         self.pval[i] = int_prec(self.val[i],p)
                         self.perr[i] = int_prec(self.err[i],p,err=True)
-                        
+
                 self.p = np.array(self.p).astype(int)
 
             except:
                 print("try something else")
-        
+
 def printvar(var):
-    print(var.name,var.av,var.err,var.units)
+    print(var.av,var.val,var.err)
 
 def printerr(var):
-    print(var.name,var.err,var.err/var.val)
-
+    print(var.err,var.err/var.val)
