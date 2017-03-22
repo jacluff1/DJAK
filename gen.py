@@ -4,7 +4,8 @@ import csv
 __all__ = ['CSV','sort','nearest','maxima','minima','extrema',
            'var']
 
-def CSV(path_in,path_out,title,numpyA=float,saveA=True): # imports csv, converts to np array, and saves it as .npy file
+def CSV(title,skip_row=0,path_in='../csv/',path_out='../npy/',numpyA=float,saveA=True):
+    """ imports csv, converts to np array, and saves it as .npy file"""
     #path_in = str(path_in)
     #path_out = str(path_out)
     #title = str(title)
@@ -13,7 +14,7 @@ def CSV(path_in,path_out,title,numpyA=float,saveA=True): # imports csv, converts
         reader = csv.reader(d)
         for row in reader:
             DATA.append(row)
-    DATA = np.array(DATA).astype(numpyA)
+    DATA = np.array(DATA[skip_row:]).astype(numpyA)
     if saveA == True:
         np.save(path_out+title+".npy",DATA)
     else:
@@ -126,20 +127,26 @@ def int_prec(x,p,err=False):
 
 class var:
     def __init__(self,val,err):
-        self.val = val
-        self.err = err
+        self.val = float(val)
+        self.err = float(err)
 
         try: # try for scalar values in val and err
 
-            if self.err < 1:
+            if all(self.err < 1, self.err != 0):
 
                 p = int(float_prec(self.err))
                 self.p = p
                 self.pval = round(self.val,p)
                 self.perr = round(self.err,p)
 
-            else:
-            
+            elif self.err == 0.0:
+
+                self.p = 0
+                self.pval = self.val
+                self.perr = self.err
+
+            elif self.err > 1:
+
                 p = len(str(int(self.err)))
                 self.p = p
                 self.pval = int_prec(self.val,p)
