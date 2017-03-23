@@ -132,7 +132,7 @@ class var:
 
         try: # try for scalar values in val and err
 
-            if all(self.err < 1, self.err != 0):
+            if all(( self.err < 1, self.err != 0.0 )):
 
                 p = int(float_prec(self.err))
                 self.p = p
@@ -140,10 +140,18 @@ class var:
                 self.perr = round(self.err,p)
 
             elif self.err == 0.0:
+                print("needs work")
 
-                self.p = 0
-                self.pval = self.val
-                self.perr = self.err
+                if self.val < 1:
+                    p = int(float_prec(self.val))
+                    self.p = p
+                    self.pval = round(self.val,p)
+                    self.perr = .5 * 10**-p
+                else:
+                    p = len(str(int(self.val)))
+                    self.p = p
+                    self.pval = int_prec(self.val,p)
+                    self.perr = .5 * 10**-p
 
             elif self.err > 1:
 
@@ -153,6 +161,7 @@ class var:
                 self.perr = int_prec(self.err,p,err=True)
 
         except:
+            print("made into an array")
 
             try: # try for same length array/list in val and err
 
@@ -185,7 +194,7 @@ class var:
                 print("try something else")
 
 def printvar(var):
-    print(var.av,var.val,var.err)
-
-def printerr(var):
-    print(var.err,var.err/var.val)
+    print("")
+    print("value = %s +/- %s" % (var.val,var.err) )
+    print("precicon = %s" % var.p )
+    print("print value = %s +/- %s" % (var.pval,var.perr) )
