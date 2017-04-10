@@ -5,25 +5,11 @@ import csv
 __all__ = ['CSV','sort','nearest','maxima','minima','extrema',
            'var']
 
-def csv_2_numpy(path_in,title,path_out='',dtype=np.float64,title_row=False):
-    """ opens up a .csv file and converts it to nupmpy
-
-    Parameters
-    ----------
-    path_in:    pathway to csv                          - str
-    title:      name of file                            - str
-    path_out:   ** if != '', will save to this pathway  - default = ''
-    dtype:      ** data type of numpy array             - default = np.float64
-    title_row:  ** if == True will skip a row           - default = False
-
-    Returns
-    -------
-    np.array
-    """
-
-    if path_in[-1] != '/':                              path_in  += '/'
-    if title[-4] != '.csv':                             title    += '.csv'
-    if all(( path_out != '' , path_out[-1] != '/' )):   path_out += '/'
+def CSV(title,skip_row=0,path_in='../csv/',path_out='../npy/',numpyA=float,saveA=True):
+    """ imports csv, converts to np array, and saves it as .npy file"""
+    #path_in = str(path_in)
+    #path_out = str(path_out)
+    #title = str(title)
 
     DATA = []
     with open(path_in+title, newline='', encoding='utf-8') as d:
@@ -31,69 +17,11 @@ def csv_2_numpy(path_in,title,path_out='',dtype=np.float64,title_row=False):
         for row in reader:
             DATA.append(row)
 
-    if title_row:
-        DATA = np.array(DATA[1:]).astype(dtype)
-    else:
-        DATA = np.array(DATA).astype(dtype)
-
-    if path_out != '':
+    DATA = np.array(DATA[skip_row:]).astype(numpyA)
+    if saveA == True:
         np.save(path_out+title+".npy",DATA)
 
     return DATA
-
-def csv_2_pandas(path_in,title,path_out='',dtype=np.float64,title_row=False,keys=[]):
-    """ opens a .csv file and as a panda data frame
-
-    Parameters
-    ----------
-    path_in:    pathway to csv                          - str
-    title:      name of file                            - str
-    path_out:   ** if != '', will save to this pathway  - default = ''
-    dtype:      ** data type of numpy array             - default = np.float64
-    title_row:  ** if == True will be column names      - default = False
-    keys:       ** if len(keys)>0 will be column names  - default = []
-
-    Returns
-    -------
-    pd.DataFrame
-    """
-
-    # check parameters
-    assert any(( len(keys) > 0 , title_row )), "either use title row as names or use 'keys'"
-
-    if path_in[-1] != '/':                              path_in     += '/'
-    if title[-4:] != '.csv':                            title       += '.csv'
-    if all(( path_out != '' , path_out[-1] != '/' )):   path_out    += '/'
-
-    # determine column names
-    if title_row == False:
-        # assert len(keys) == len(DATA[0,:]), "length of keys must equal number of colums!"
-        df = pd.read_csv(path_in+title,names=keys)
-
-    else:
-        df = pd.read_csv(path_in+title)
-
-    if path_out != '':
-        pd.to_pickle(df,path_out+title)
-
-    return df
-
-# def open_data(path_in,path_out,title,import_type='csv',export_type='pandas',key=[],saveA=True):
-#
-#     try:
-#         if export_type == 'pandas':
-#             data = pd.read_pickle(path_out+title+'.pkl')
-#         elif export_type == 'numpy':
-#             data = np.load(path_out+title+'.npy')
-#     except:
-#         if all(( import_type == 'csv', export_type == 'pandas')):
-#             data = CSV(path_in,path_out,title,saveA=saveA,key=key)
-#         elif all(( import_type == 'csv', export_type == 'numpy' )):
-#             data = CSV(path_in,path_out,title,saveA=saveA)
-#
-#     return data
-
-
 
 def sort(Array,column): # sorts array by given column number
     return Array[Array[:,column].argsort()]
@@ -173,17 +101,23 @@ def extrema(X,Y,x_range,xmin_approx,xmax_approx,ret='sep',sortcol=0): # finds th
         return ext
 
 def float_prec(x):
-    x = str(x)
-    x = x[2:]
-    p = 1
-    for i in range(len(x)):
-        if x[i] == '0':
-            p += 1
-        else:
-            break
+    str_x = str(x)
+    find_e = str.find(str_x,'e-')
+    if find_e != -1:
+        p = float(str_x[find_e+2:])
+    else:
+        str_x = str_x[2:]
+        p = 1
+        for i in range(len(str_x)):
+            if str_x[i] == '0':
+                p += 1
+            else:
+                break
     return p
 
 def int_prec(x,p,err=False):
+    if p == 1:
+        err=True
 
     if err == False:
         mult = 10**(p)
@@ -196,27 +130,40 @@ def int_prec(x,p,err=False):
 
 class var:
     def __init__(self,val,err):
-        self.val = val
-        self.err = err
-        # self.units = units
+        self.val = float(val)
+        self.err = float(err)
 
         try: # try for scalar values in val and err
 
-            if self.err < 1:
+            if all(( self.err < 1, self.err != 0.0 )):
 
-                p = float_prec(self.err)
+                p = int(float_prec(self.err))
                 self.p = p
                 self.pval = round(self.val,p)
                 self.perr = round(self.err,p)
 
-            else:
+            elif self.err == 0.0:
+                print("needs work")
 
+                if self.val < 1:
+                    p = int(float_prec(self.val))
+                    self.p = p
+                    self.pval = round(self.val,p)
+                    self.perr = .5 * 10**-p
+                else:
+                    p = len(str(int(self.val)))
+                    self.p = p
+                    self.pval = int_prec(self.val,p)
+                    self.perr = .5 * 10**-p
+
+            elif self.err > 1:
                 p = len(str(int(self.err)))
                 self.p = p
                 self.pval = int_prec(self.val,p)
                 self.perr = int_prec(self.err,p,err=True)
 
         except:
+            print("made into an array")
 
             try: # try for same length array/list in val and err
 
@@ -247,9 +194,3 @@ class var:
 
             except:
                 print("try something else")
-
-def printvar(var):
-    print(var.name,var.av,var.err,var.units)
-
-def printerr(var):
-    print(var.name,var.err,var.err/var.val)
