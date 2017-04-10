@@ -4,7 +4,7 @@ from scipy import optimize
 __all__ = ['SS_xx','SS_xy','m_exp','b_exp','SS_yy','SS_E','SS_R',
            'sig_y','sig_m','sig_b','RMSE','R2','lin_fit','least_square']
 
-def SS_xx(X): # 
+def SS_xx(X): #
 	x_bar = np.average(X)
 	sum = 0
 	for x in X:
@@ -118,23 +118,27 @@ def lin_fit(X_data,Y_data,X_lin):
     Y_data=np.array(Y_data)
     m = m_exp(X_data,Y_data)
     b = b_exp(X_data,Y_data)
-    Y_lin = m*X_lin + b
-    
-    #m_err = np.sqrt(s_m2(X_data,Y_data))
-    #b_err = np.sqrt(s_b2(X_data,Y_data))
-    #Yp = (m+m_err)*X_lin + (b+b_err)
-    #Ym = (m-m_err)*X_lin + (b-b_err)
-    return Y_lin
+    Y_fit = m*X_lin + b
+
+    m_err = sig_m(X_data,Y_data)
+    b_err = sig_b(X_data,Y_data)
+
+    m_var = dg.var(m,m_err)
+    b_var = dg.var(b,b_err)
+
+    R2 = R2(X_data,Y_data)
+
+    return {'Y_fit':Y_fit, 'm':m_var, 'b':b_var, 'R2':R2}
 
 def least_square(fitfunc,par,X_data,Y_data,cycles=5000):
-    
+
     def errfunc(p,x,y):
         return y - fitfunc(p,x)
     xdata = np.array(X_data)
     ydata = np.array(Y_data)
-    
+
     qout,success = optimize.leastsq(errfunc,par,args=(xdata,ydata),maxfev=cycles)
-    
+
     if success == False:
         print("OMFG - Failed!!")
     return qout
@@ -157,22 +161,22 @@ def least_square(fitfunc,par,X_data,Y_data,cycles=5000):
 #     else:
 #         pcov = np.inf
 
-#     error = [] 
+#     error = []
 #     for i in range(len(pfit)):
 #         try:
 #           error.append(np.absolute(pcov[i][i])**0.5)
 #         except:
 #           error.append( 0.00 )
 #     pfit_leastsq = pfit
-#     perr_leastsq = np.array(error) 
-#     return pfit_leastsq, perr_leastsq 
+#     perr_leastsq = np.array(error)
+#     return pfit_leastsq, perr_leastsq
 
 # def fit_curvefit(p0, datax, datay, function, yerr=err_stdev, **kwargs):
 
 #     pfit, pcov = \
 #          optimize.curve_fit(f,datax,datay,p0=p0,\
 #                             sigma=yerr, epsfcn=0.0001, **kwargs)
-#     error = [] 
+#     error = []
 #     for i in range(len(pfit)):
 #         try:
 #           error.append(np.absolute(pcov[i][i])**0.5)
@@ -180,8 +184,4 @@ def least_square(fitfunc,par,X_data,Y_data,cycles=5000):
 #           error.append( 0.00 )
 #     pfit_curvefit = pfit
 #     perr_curvefit = np.array(error)
-#     return pfit_curvefit, perr_curvefit 
-    
-
-
-
+#     return pfit_curvefit, perr_curvefit
