@@ -215,9 +215,9 @@ def lin_fit(X_data,Y_data,X_lin):
         m_var = dg.var(m,0)
         b_var = dg.var(b,0)
 
-    R2 = R2(X_data,Y_data)
+    R_2 = R2(X_data,Y_data)
 
-    return {'Y_fit':Y_fit, 'm':m_var, 'b':b_var, 'R2':R2}
+    return {'Y_fit':Y_lin, 'm':m_var, 'b':b_var, 'R2':R_2}
 
 def least_square(fitfunc,par,X_data,Y_data,cycles=5000):
     """ complete least square fit to data
