@@ -1,104 +1,141 @@
-import numpy as np 
+import numpy as np
 
-# DERIVATIVES
+#===============================================================================
+""" numerical derivatives
+of form f'(f,x) """
+#-------------------------------------------------------------------------------
 
-def D_fd(y, t, h=1e-9):
+def D_fd(f, x, h=1e-9):
     """Forward difference
-    calculates numerical derivative
+    calculates numerical derivative of f(x)
 
 	args
 	----
-	y: function to take derivative of
-	t: argument of y 
+	f: function to take derivative of
+	x: argument of f
 	"""
-    return (y(t + h) - y(t))/h
+    return (f(x + h) - f(x))/h
 
-def D_cd(y, t, h=1e-8):
+def D_cd(f, x, h=1e-8):
     """Central difference
-    calculates numerical derivative
+    calculates numerical derivative of f(x)
 
 	args
 	----
-	y: function to take derivative of
-	t: argument of y 
+	f: function to take derivative of
+	x: argument of f
 	"""
-    return ( y(t+(h/2)) - y(t-(h/2)) )/h
+    return ( f(x+(h/2)) - f(x-(h/2)) )/h
 
-def D_ep(y, t, h=1e-3):
+def D_ep(x, f, h=1e-3):
     """Extended difference
-	calculates numerical derivative
+	calculates numerical derivative of f(x)
 
 	args
 	----
-	y: function to take derivative of
-	t: argument of y 
+	f: function to take derivative of
+	x: argument of f
     """
-    return ( 8*(y(t+(h/4)) - y(t-(h/4))) - (y(t+(h/2)) - y(t-(h/2))) ) / (3*h)
+    return ( 8*(f(x+(h/4)) - f(x-(h/4))) - (f(x+(h/2)) - f(x-(h/2))) ) / (3*h)
 
- # NUMERICAL INTEGRATORS
+#===============================================================================
+""" numerical integrators
+1) f - function(t,x) that returns vector (x',x'')
+2) t - time t
+3) x - vector includes (x,x')
+4) h - increment """
+#-------------------------------------------------------------------------------
 
- def FOeuler(FOLDE,x0,t0,tf,dt=1e-5):
-	"""First Order Euler Engine
+def euler(f,t,x,h):
+    """ euler integrator
+    3D ok
 
-	arguments
-	---------
-	FOLDE: defined function name of first order equation
-	x0: initial pos - scalar
-	t0: initial time - scalar
-	tf: final t - scalar
-	**dt: time step value - scalar
+    arguments
+    ---------
+    x:  vector includes (x,x')
+    f:  function that returns vector (x',x'')
+    t:  time t
+    h:  increment
+    """
 
-	returns
-	-------
-	T: time values - numpy array
-	X: position values - numpy array
-	"""
+    return x + h * f(t, x)
 
-	# Create numpy array of time values
-	T = np.arange(t0,tf+dt,dt)
+def rk2(f,t,x,h):
+    """ Runge-Kutta rk2 integrator
+    3D ok
 
-	# Create empty numpy array of postion values
-	X = np.zeros(len(T))
+    arguments
+    ---------
+    x:  vector includes (x,x')
+    f:  function that returns vector (x',x'')
+    t:  time t
+    h:  increment
+    """
 
-	# Add initial position to position array
-	X[0] = x0
+    k1  =   f(t,            x)
+    k2  =   f(t + (1/2)*h,  x + (1/2)*h*k1)
+    return x + h*k2
 
-	# first order engine
-	for i in range(len(T[:-1])):
-		# filling in Y with euler engine
-		X[i+1] = X[i] + FOLDE(T[i])*dt
+def rk4(f,t,x,h):
+    """ Runge-Kutta rk4 integrator
+    3D ok
 
-	return T,X
+    arguments
+    ---------
+    x:  vector includes (x,x')
+    f:  function that returns vector (x',x'')
+    t:  time t
+    h:  increment
+    """
 
-def SOeuler(SOLDE,x0,v0,t0,tf,dt=1e-5):
-	"""Second Order Euler Engine
+    k1  =   f(t,            x)
+    k2  =   f(t + (1/2)*h,  x + (1/2)*h*k1)
+    k3  =   f(t + (1/2)*h,  x + (1/2)*h*k2)
+    k4  =   f(t + h,        x + h*k3)
+    return x + (h/6)*(k1 + 2*k2 + 2*k3 + k4)
 
-	arguements
-	----------
-	SOLDE: defined function for second order equation
-	x0: inital position - scalar
-	v0: initial velocity - scalar
-	t0: initial time - scalar
-	tf: final time - scalar
-	**dt: time step - scalar
+def velocity_verlet(f,t,x,h):
+    """ velocity verlet integrator
+    f0 must be updated each step
+    3D ok
 
-	returns
-	-------
-	T: time values - numpy array
-	X: position values - numpy array
-	"""
+    arguments
+    ---------
+    x:  vector includes (x,x')
+    f:  function that returns vector (x',x'')
+    t:  time t
+    h:  increment
+    """
 
-	# define X, Y, and Y' arrays
-	T = np.arange(t0,tf+dt,dt)
-	X = np.zeros(len(T))
-	V = np.zeros(len(T))
+    f1      =   f(t,    x)
+    x[1]    +=  (1/2)*h*f1[1]
+    x[0]    +=  h*x[1]
+    f2      +=  f(t+h,  x)
+    x[1]    +=  (1/2)*h*f2[1]
+    return y
 
-	# initalize Y and Y' arrays
-	X[0],V[0] = x0,v0
+#===============================================================================
+""" integrator engine
+an example of how to use the integrators
+with a tmax termination condition. """
+#-------------------------------------------------------------------------------
 
-	#SO engine
-	for i in range(len(T[:-1])):
-		X[i+1] = X[i] + V[i]*dt
-		V[i+1] = V[i] + SOLDE(T[i],X[i],V[i])*dt
+def integrator(f,x0=(0,),v0=(0,),h=1e-4,tmax=100,method=rk4):
 
-	return T,X
+    Nsteps  =   tmax/h
+    dim     =   len(x0)
+    assert len(x0) == len(v0), 'x0 and v0 must be same length'
+    
+    T       =   h * np.arange(Nsteps)
+    X       =   np.zeros(( len(T), 2, dim ))
+    POS     =   np.zeros(( len(T), dim+1 ))
+
+    # set initial conditions
+    X[0,:,:]    =   x0,v0
+    POS[0,:]    =   0,*x0
+
+    for i,t in enumerate(T[:-1]):
+        X[i+1,:,:]  =   method(f,t,X[i],h)
+        POS[i+1,:]  =   t,*X[i+1,0,:]
+
+    return POS

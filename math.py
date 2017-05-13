@@ -1,6 +1,8 @@
+import numpy as np
+
 def double_factorial(n):
     """computes the double factorial
-    
+
     args
     ----
     n: integer greater than -1
