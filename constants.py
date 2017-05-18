@@ -116,6 +116,7 @@ def unit_conversion(length=m,mass=kg,time=s):
 	units['m_p']		=	conv(1.67262158e-27 * mass.value, mass.units)
 	units['m_n']		=	conv(1.67492716e-27 * mass.value, mass.units)
 	units['m_H']		=	conv(1.673532499e-27 * mass.value, mass.units)
+	units['m_He']		=	conv(6.6464764e-27 * mass.value, mass.units)
 	units['N_A']		=	conv(1000*6.02214199e23 / mass.value, '# / %s' % mass.units)
 	units['R']			=	conv(1000*8.314472 * energy.value / mass.value, '%s / %s / K' % (energy.units, mass.units) )
 	units['a_0']		=	conv(5.291772083e-11 * length.value, length.units)
@@ -123,7 +124,7 @@ def unit_conversion(length=m,mass=kg,time=s):
 	units['Ry_energy']	=	conv(units['Ry_cons'].value * units['hc'].value, energy.units)
 	units['Ry_eV']		=	conv(units['Ry_energy'].value/units['eV'].value, 'eV')
 
-	# if all(( length == cm , mass == gr , time == s )):
-	# 	units['e'] 		=
-
 	return units
+
+SI 		=	unit_conversion()
+CGS		=	unit_conversion(length=cm,mass=gr,time=s)

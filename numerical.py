@@ -112,7 +112,27 @@ def velocity_verlet(f,t,x,h):
     x[0]    +=  h*x[1]
     f2      +=  f(t+h,  x)
     x[1]    +=  (1/2)*h*f2[1]
-    return y
+    return x
+
+def leapfrog(f,t,x,h):
+    """ leap frog integrator
+    f0 must be updated each step
+    3D ok
+
+    arguments
+    ---------
+    x:  vector includes (x,x')
+    f:  function that returns vector (x',x'')
+    t:  time t
+    h:  increment
+    """
+
+    a1      =   f(t,    x)
+    x[1]    +=  a1[1] * (h/2)
+    x[0]    +=  x[1]*h
+    a2      =   f(t+h,  x)
+    x[1]    +=  a2[1] * (h/2)
+    return x
 
 #===============================================================================
 """ integrator engine
@@ -125,7 +145,7 @@ def integrator(f,x0=(0,),v0=(0,),h=1e-4,tmax=100,method=rk4):
     Nsteps  =   tmax/h
     dim     =   len(x0)
     assert len(x0) == len(v0), 'x0 and v0 must be same length'
-    
+
     T       =   h * np.arange(Nsteps)
     X       =   np.zeros(( len(T), 2, dim ))
     POS     =   np.zeros(( len(T), dim+1 ))
