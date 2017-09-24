@@ -15,3 +15,12 @@ def double_factorial(n):
         return np.prod(l[::2])
     else:
         return np.prod(l[1::2])
+
+def heavi(x):
+    """compute heaviside step function
+
+    args
+    ----
+    x
+    """
+    return 0.5 * (np.sign(x) + 1)

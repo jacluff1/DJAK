@@ -100,97 +100,52 @@ def extrema(X,Y,x_range,xmin_approx,xmax_approx,ret='sep',sortcol=0): # finds th
         ext = sort(np.vstack((minima,maxima)),sortcol)
         return ext
 
-def float_prec(x):
-    str_x = str(x)
-    find_e = str.find(str_x,'e-')
-    if find_e != -1:
-        p = float(str_x[find_e+2:])
-    else:
-        str_x = str_x[2:]
-        p = 1
-        for i in range(len(str_x)):
-            if str_x[i] == '0':
-                p += 1
-            else:
-                break
-    return p
-
-def int_prec(x,p,err=False):
-    if p == 1:
-        err=True
-
-    if err == False:
-        mult = 10**(p)
-        x_new = int(round(x/mult)) * mult
-    else:
-        mult = 10**(p-1)
-        x_new = int(round(x/mult)) * mult
-
-    return x_new
-
 class var:
     def __init__(self,val,err):
-        self.val = float(val)
-        self.err = float(err)
+        self.val    =   float(val)
+        self.err    =   float(err)
+        ylen        =   len(str(int(self.err)))
+        n           =   0
 
-        try: # try for scalar values in val and err
+        if self.err > 1:
+            self.err_scale  =   10**(ylen-1)
+            y               =   int(round(self.err / self.err_scale))
+            if self.err > 1000:
+                self.perr   =   '%s $\\times$ 10$^{%s}$' % (y,(ylen-1))
+            else:
+                self.perr   =   str(y*self.err_scale)
 
-            if all(( self.err < 1, self.err != 0.0 )):
+        elif self.err < 1:
+            y               =   self.err
+            while y < 1:
+                n           +=  1
+                y           *=  10
+            self.err_scale  =   10**(-n)
+            y               =   int(round(self.err / self.err_scale))
+            if self.err < .001:
+                self.perr   =   '%s $\\times$ 10$^{-%s}$' % (y,n)
+            else:
+                self.perr   =   str(y * self.err_scale)
 
-                p = int(float_prec(self.err))
-                self.p = p
-                self.pval = round(self.val,p)
-                self.perr = round(self.err,p)
+        if self.val > 1:
+            x               =   int(round(self.val / self.err_scale))
+            if self.err > 1000:
+                self.pval   =   '%s $\\times$ 10$^{%s}$' % (x,(ylen-1))
+            else:
+                self.pval   =   str(x*self.err_scale)
 
-            elif self.err == 0.0:
-                print("needs work")
+        elif self.val < 1:
+            x               =   int(round(self.val / self.err_scale))
+            if self.err < .001:
+                self.pval   =   '%s $\\times$ 10$^{-%s}$' % (x,n)
+            else:
+                self.pval   =   str(x * self.err_scale)
 
-                if self.val < 1:
-                    p = int(float_prec(self.val))
-                    self.p = p
-                    self.pval = round(self.val,p)
-                    self.perr = .5 * 10**-p
-                else:
-                    p = len(str(int(self.val)))
-                    self.p = p
-                    self.pval = int_prec(self.val,p)
-                    self.perr = .5 * 10**-p
-
-            elif self.err > 1:
-                p = len(str(int(self.err)))
-                self.p = p
-                self.pval = int_prec(self.val,p)
-                self.perr = int_prec(self.err,p,err=True)
-
+def directory_checker(dirname):
+    """ check if a directory exists, makes it if it doesn't """
+    dirname =   str(dirname)
+    if not os.path.exists(dirname):
+        try:
+            os.mkdir(dirname)
         except:
-            print("made into an array")
-
-            try: # try for same length array/list in val and err
-
-                self.val = np.array(self.val)
-                self.err = np.array(self.err)
-                self.p = np.zeros_like(self.err)
-                self.pval = np.zeros_like(self.err)
-                self.perr = np.zeros_like(self.err)
-
-                for i in range(len(self.err)):
-
-                    if self.err[i] < 1:
-
-                        p = float_prec(self.err[i])
-                        self.p[i] = p
-                        self.pval[i] = round(self.val[i],p)
-                        self.perr[i] = round(self.err[i],p)
-
-
-                    else:
-
-                        p = len(str(int(self.err[i])))
-                        self.p[i] = p
-                        self.pval[i] = int_prec(self.val[i],p)
-                        self.perr[i] = int_prec(self.err[i],p,err=True)
-
-                self.p = np.array(self.p).astype(int)
-
-            except:
-                print("try something else")
+            os.stat(dirname)

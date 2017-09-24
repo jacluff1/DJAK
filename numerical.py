@@ -5,7 +5,7 @@ import numpy as np
 of form f'(f,x) """
 #-------------------------------------------------------------------------------
 
-def D_fd(f, x, h=1e-9):
+def d_fd(f, x, h=1e-9):
     """Forward difference
     calculates numerical derivative of f(x)
 
@@ -16,7 +16,7 @@ def D_fd(f, x, h=1e-9):
 	"""
     return (f(x + h) - f(x))/h
 
-def D_cd(f, x, h=1e-8):
+def d_cd(f, x, h=1e-8):
     """Central difference
     calculates numerical derivative of f(x)
 
@@ -27,7 +27,7 @@ def D_cd(f, x, h=1e-8):
 	"""
     return ( f(x+(h/2)) - f(x-(h/2)) )/h
 
-def D_ep(x, f, h=1e-3):
+def d_ep(x, f, h=1e-3):
     """Extended difference
 	calculates numerical derivative of f(x)
 
