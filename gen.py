@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import csv
+import os
 
 __all__ = ['CSV','sort','nearest','maxima','minima','extrema',
            'var']
